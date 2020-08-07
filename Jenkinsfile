@@ -1,20 +1,35 @@
 pipeline {
-    agent { docker { image 'python:3.5.1' } }
+   agent any
 
-     stages {
+    tools {
+       
+        dockerTool "docker"
+        
+    }
+
+    stages {
         stage('VCS') {
             steps {
                 git 'https://github.com/creepyghost/hello-world-webapp.git'
             }
         }
-        stage('Build') {
+    stage('Deploy') {
             steps {
-                sh "pip install -r requirements.txt"
+                script {
+                    withDockerRegistry(
+                        credentialsId: '4182aebb-11ec-4640-9754-4cfa89891c64',
+                        toolName: 'docker') {
+                        
+                    
+                        def echoServerImage = docker.build("arnabnath96/python-jenkins:latest");
+                        echoServerImage.push();
+                    }
+                }
             }
-        }
-        
+        }    
     }
-    post {   
+    post {
+    
         success {
             echo "Success"
         }
